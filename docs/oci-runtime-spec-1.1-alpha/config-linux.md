@@ -158,8 +158,8 @@ Linux ABI 包括系统调用和一些特殊的文件路径。
 * [`/dev/null`][null.4]。
 * [`/dev/zero`][zero.4]。
 * [`/dev/full`][full.4]。
-* [`/dev/random`][随机.4]
-* [`/dev/urandom`][随机.4] 。
+* [`/dev/random`][random.4]
+* [`/dev/urandom`][random.4] 。
 * [`/dev/tty`][tty.4]
 * `/dev/console` 是在配置中启用了 [`terminal`](config.md#process) 后设置的，通过绑定挂载伪终端 pty 到 `/dev/console` 。
 * [`/dev/ptmx`][pts.4].
