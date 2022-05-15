@@ -31,7 +31,7 @@ Open Container Initiative Runtime Specification 旨在指定容器的配置、�
 - [运行时和生命周期](runtime.md)
     - [Linux 特定的运行时和生命周期](runtime-linux.md)
 - [配置](config.md)
-    - Linux 专用配置
+    - [Linux 专用配置](config-linux.md)
     - Solaris 专用配置
     - Windows 专用配置
     - 虚拟机专用配置

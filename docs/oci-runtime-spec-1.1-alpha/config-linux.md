@@ -1,50 +1,50 @@
-# <a name="linuxContainerConfiguration" />Linux Container Configuration
+# <a name="linuxContainerConfiguration" />Linux 容器配置
 
-This document describes the schema for the [Linux-specific section](config.md#platform-specific-configuration) of the [container configuration](config.md).
-The Linux container specification uses various kernel features like namespaces, cgroups, capabilities, LSM, and filesystem jails to fulfill the spec.
+本文描述了 [容器配置](config.md) 的 [Linux 专用部分](config.md#platform-specific-configuration) 的模式。
+Linux 容器规范使用各种内核特性，如 namespaces, cgroups, capabilities, LSM 以及 filesystem jails 来实现该规范。
 
 ## <a name="configLinuxDefaultFilesystems" />Default Filesystems
 
-The Linux ABI includes both syscalls and several special file paths.
-Applications expecting a Linux environment will very likely expect these file paths to be set up correctly.
+Linux ABI 包括系统调用和一些特殊的文件路径。
+期待 Linux 环境的应用程序很可能期望这些文件路径被正确设置。
 
-The following filesystems SHOULD be made available in each container's filesystem:
+以下文件系统应该在每个容器的文件系统中可用。
 
-| Path     | Type   |
-| -------- | ------ |
-| /proc    | [proc][] |
+| 路径     | 类型       |
+| -------- | ---------- |
+| /proc    | [proc][]   |
 | /sys     | [sysfs][]  |
 | /dev/pts | [devpts][] |
 | /dev/shm | [tmpfs][]  |
 
 ## <a name="configLinuxNamespaces" />Namespaces
 
-A namespace wraps a global system resource in an abstraction that makes it appear to the processes within the namespace that they have their own isolated instance of the global resource.
-Changes to the global resource are visible to other processes that are members of the namespace, but are invisible to other processes.
-For more information, see the [namespaces(7)][namespaces.7_2] man page.
+命名空间将全局系统资源包裹在一个抽象中，使命名空间中的进程看起来有自己的全局资源的孤立实例。
+对全局资源的改变对作为命名空间成员的其他进程是可见的，但对其他进程是不可见的。
+更多信息，请参阅 [namespaces(7)][namespaces.7_2] man page。
 
-Namespaces are specified as an array of entries inside the `namespaces` root field.
-The following parameters can be specified to set up namespaces:
+命名空间被指定为`namespaces`根字段内的条目数组。
+可以指定以下参数来设置命名空间。
 
-* **`type`** *(string, REQUIRED)* - namespace type. The following namespace types SHOULD be supported:
-    * **`pid`** processes inside the container will only be able to see other processes inside the same container or inside the same pid namespace.
-    * **`network`** the container will have its own network stack.
-    * **`mount`** the container will have an isolated mount table.
-    * **`ipc`** processes inside the container will only be able to communicate to other processes inside the same container via system level IPC.
-    * **`uts`** the container will be able to have its own hostname and domain name.
-    * **`user`** the container will be able to remap user and group IDs from the host to local users and groups within the container.
-    * **`cgroup`** the container will have an isolated view of the cgroup hierarchy.
-* **`path`** *(string, OPTIONAL)* - namespace file.
-    This value MUST be an absolute path in the [runtime mount namespace](glossary.md#runtime-namespace).
-    The runtime MUST place the container process in the namespace associated with that `path`.
-    The runtime MUST [generate an error](runtime.md#errors) if `path` is not associated with a namespace of type `type`.
+- **`type`** *(string, REQUIRED)* - 命名空间类型。应该支持以下命名空间类型。
+    - **`pid`** 容器内的进程将只能看到同一容器内或同一 pid 命名空间内的其他进程。
+    - **`network`** 容器将有自己的网络栈。
+    - **`mount`** 容器将有一个隔离的挂载表。
+    - **`ipc`** 容器内的进程只能通过系统级IPC与同一容器内的其他进程通信。
+    - **`uts`** 容器将能够拥有自己的主机名和域名。
+    - **`user`** 容器将能够把主机上的用户和组ID重新映射到容器内的本地用户和组。
+    - **`cgroup`** 容器将有一个孤立的cgroup层次结构的视图。
+- **`path`** *(string, OPTIONAL)* - 命名空间文件。
+    这个值必须是 [运行时命名空间](glossary.md#runtime-namespace) 中的绝对路径。
+    运行时必须将容器进程放在与该 "路径" 相关的命名空间中。
+    如果 `path` 没有与 `type` 类型的命名空间相关联，则运行时必须[产生一个错误](runtime.md#errors)。
 
-    If `path` is not specified, the runtime MUST create a new [container namespace](glossary.md#container-namespace) of type `type`.
+    如果没有指定 `path`，运行时必须创建一个新的 `type` 类型的[容器命名空间](glossary.md#container-namespace)。
 
-If a namespace type is not specified in the `namespaces` array, the container MUST inherit the [runtime namespace](glossary.md#runtime-namespace) of that type.
-If a `namespaces` field contains duplicated namespaces with same `type`, the runtime MUST [generate an error](runtime.md#errors).
+如果在 `namespaces` 数组中没有指定命名空间类型，那么容器必须继承该类型的 [运行时命名空间](glossary.md#runtime-namespace)。
+如果 `namespaces` 字段包含具有相同 `类型` 的重复命名空间，运行时必须[产生一个错误](runtime.md#errors)。
 
-### Example
+### 例子
 
 ```json
 "namespaces": [
@@ -76,19 +76,19 @@ If a `namespaces` field contains duplicated namespaces with same `type`, the run
 
 ## <a name="configLinuxUserNamespaceMappings" />User namespace mappings
 
-**`uidMappings`** (array of objects, OPTIONAL) describes the user namespace uid mappings from the host to the container.
-**`gidMappings`** (array of objects, OPTIONAL) describes the user namespace gid mappings from the host to the container.
+**`uidMappings`** (object[]，OPTIONAL) 描述了 从主机到容器 的用户命名空间 uid 映射。
+**`gidMappings`** (object[]，OPTIONAL) 描述了 从主机到容器 的用户名称空间 gid 映射。
 
-Each entry has the following structure:
+每个条目都有以下结构。
 
-* **`containerID`** *(uint32, REQUIRED)* - is the starting uid/gid in the container.
-* **`hostID`** *(uint32, REQUIRED)* - is the starting uid/gid on the host to be mapped to *containerID*.
-* **`size`** *(uint32, REQUIRED)* - is the number of ids to be mapped.
+**`containerID`** *(uint32, REQUIRED)* - 是容器中的起始uid/gid。
+**`hostID`** *(uint32, REQUIRED)* - 是要映射到*containerID*的主机上的起始uid/gid。
+**`size`** *(uint32, REQUIRED)* - 是要映射的ID的数量。
 
-The runtime SHOULD NOT modify the ownership of referenced filesystems to realize the mapping.
-Note that the number of mapping entries MAY be limited by the [kernel][user-namespaces].
+运行时不应该为了实现映射而修改引用的文件系统的所有权。
+请注意，映射项的数量可能会受到 [kernel][user-namespaces] 的限制。
 
-### Example
+### 例子
 
 ```json
 "uidMappings": [
@@ -109,24 +109,24 @@ Note that the number of mapping entries MAY be limited by the [kernel][user-name
 
 ## <a name="configLinuxDevices" />Devices
 
-**`devices`** (array of objects, OPTIONAL) lists devices that MUST be available in the container.
-The runtime MAY supply them however it likes (with [`mknod`][mknod.2], by bind mounting from the runtime mount namespace, using symlinks, etc.).
+**`devices`** (对象数组，可选)列出容器中必须有的设备。
+运行时可以以它喜欢的方式提供这些设备（使用 [`mknod`][mknod.2]，通过从运行时 mount 命名空间绑定安装，使用符号链接，等等）。
 
-Each entry has the following structure:
+每个条目都有以下结构。
 
-* **`type`** *(string, REQUIRED)* - type of device: `c`, `b`, `u` or `p`.
-    More info in [mknod(1)][mknod.1].
-* **`path`** *(string, REQUIRED)* - full path to device inside container.
-    If a [file][] already exists at `path` that does not match the requested device, the runtime MUST generate an error.
-* **`major, minor`** *(int64, REQUIRED unless `type` is `p`)* - [major, minor numbers][devices] for the device.
-* **`fileMode`** *(uint32, OPTIONAL)* - file mode for the device.
-    You can also control access to devices [with cgroups](#configLinuxDeviceAllowedlist).
-* **`uid`** *(uint32, OPTIONAL)* - id of device owner in the [container namespace](glossary.md#container-namespace).
-* **`gid`** *(uint32, OPTIONAL)* - id of device group in the [container namespace](glossary.md#container-namespace).
+- **`type`** *(string, REQUIRED)* - 设备的类型：`c`, `b`, `u`或`p`。
+    更多信息见[mknod(1)][mknod.1]。
+- **`path`** *(string, REQUIRED)* - 容器内设备的完整路径。
+    如果在 `path` 处已经存在一个[file][]，但与请求的设备不匹配，运行时必须产生一个错误。
+- **`major, minor`** *(int64, REQUIRED unless `type` is `p`)* - 设备的 [major, minor numbers][devices]。
+- **`fileMode`** *(uint32, OPTIONAL)* - 设备的文件模式。
+    你也可以[用cgroups](#configLinuxDeviceAllowedlist)控制对设备的访问。
+- **`uid`** *(uint32, OPTIONAL)* - 设备所有者在[容器命名空间](glossary.md#container-namespace)的id。
+- **`gid`** *(uint32, OPTIONAL)* - [容器命名空间](glossary.md#container-namespace) 中设备组的id。
 
-The same `type`, `major` and `minor` SHOULD NOT be used for multiple devices.
+相同的 `type`, `major` 和 `minor` 不应被用于多个设备。
 
-### Example
+### 例子
 
 ```json
 "devices": [
@@ -153,58 +153,59 @@ The same `type`, `major` and `minor` SHOULD NOT be used for multiple devices.
 
 ### <a name="configLinuxDefaultDevices" />Default Devices
 
-In addition to any devices configured with this setting, the runtime MUST also supply:
+除了用此设置配置的任何设备外，运行时还必须提供。
 
-* [`/dev/null`][null.4]
-* [`/dev/zero`][zero.4]
-* [`/dev/full`][full.4]
-* [`/dev/random`][random.4]
-* [`/dev/urandom`][random.4]
+* [`/dev/null`][null.4]。
+* [`/dev/zero`][zero.4]。
+* [`/dev/full`][full.4]。
+* [`/dev/random`][随机.4]
+* [`/dev/urandom`][随机.4] 。
 * [`/dev/tty`][tty.4]
-* `/dev/console` is set up if [`terminal`](config.md#process) is enabled in the config by bind mounting the pseudoterminal pty to `/dev/console`.
+* `/dev/console` 是在配置中启用了 [`terminal`](config.md#process) 后设置的，通过绑定挂载伪终端 pty 到 `/dev/console` 。
 * [`/dev/ptmx`][pts.4].
-  A [bind-mount or symlink of the container's `/dev/pts/ptmx`][devpts].
+  一个 [容器的 `/dev/pts/ptmx` 的绑定挂载或符号链接][devpts]。
 
 ## <a name="configLinuxControlGroups" />Control groups
 
-Also known as cgroups, they are used to restrict resource usage for a container and handle device access.
-cgroups provide controls (through controllers) to restrict cpu, memory, IO, pids, network and RDMA resources for the container.
-For more information, see the [kernel cgroups documentation][cgroup-v1].
+也被称为 cgroups，它们被用来限制容器的资源使用和处理设备访问。
+cgroups 提供控制（通过控制器）来限制容器的 cpu、内存、IO、pids、网络和 RDMA 资源。
+更多信息，请参见 [kernel cgroups documentation][cgroup-v1]。
 
-A runtime MAY, during a particular [container operation](runtime.md#operation),
-such as [create](runtime.md#create), [start](runtime.md#start), or
-[exec](runtime.md#exec), check if the container cgroup is fit for purpose,
-and MUST [generate an error](runtime.md#errors) if such a check fails.
-For example, a frozen cgroup or (for [create](runtime.md#create) operation)
-a non-empty cgroup. The reason for this is that accepting such configurations
-could cause container operation outcomes that users may not anticipate or
-understand, such as operation on one container inadvertently affecting other
-containers.
+在一个特定的[容器操作](runtime.md#operation)过程中，例如 [create](runtime.md#create)、[start](runtime.md#start)、或
+[exec](runtime.md#exec)，运行时可能会检查容器 cgroup 是否适合使用。
+如果检查失败，则必须 [生成一个错误](runtime.md#errors)。
+例如，一个冻结的 cgroup 或（对于[创建](runtime.md#create)操作）一个非空的cgroup。
+这样做的原因是，接受这样的配置
+可能会导致用户可能无法预期或理解的容器操作结果。
+的结果，例如对一个容器的操作会无意中影响到其他的
+容器。
 
 ### <a name="configLinuxCgroupsPath" />Cgroups Path
 
-**`cgroupsPath`** (string, OPTIONAL) path to the cgroups.
-It can be used to either control the cgroups hierarchy for containers or to run a new process in an existing container.
+**`cgroupsPath`** (string, OPTIONAL) 通往 cgroups 的路径。
+它可以用来控制容器的 cgroups hierarchy，也可以用来在现有的容器中运行一个新进程。
 
-The value of `cgroupsPath` MUST be either an absolute path or a relative path.
+cgroupsPath 的值必须是一个绝对路径或一个相对路径。
 
-* In the case of an absolute path (starting with `/`), the runtime MUST take the path to be relative to the cgroups mount point.
-* In the case of a relative path (not starting with `/`), the runtime MAY interpret the path relative to a runtime-determined location in the cgroups hierarchy.
+* 如果是绝对路径（以`/`开头），运行时必须认为该路径是相对于 cgroups 装载点的。
+* 如果是相对路径（不以`/`开头），运行时可以将路径解释为相对于运行时确定的 cgroups hierarchy，也可以用来在现有的容器中运行一个新进程。 中的一个位置。
 
-If the value is specified, the runtime MUST consistently attach to the same place in the cgroups hierarchy given the same value of `cgroupsPath`.
-If the value is not specified, the runtime MAY define the default cgroups path.
-Runtimes MAY consider certain `cgroupsPath` values to be invalid, and MUST generate an error if this is the case.
+如果指定了该值，运行时必须在给定相同的 `cgroupsPath` 值的情况下一致地附加到 cgroups hierarchy，也可以用来在现有的容器中运行一个新进程。中的同一位置。
+如果没有指定该值，运行时可以定义默认的cgroups路径。
+运行时可能会认为某些`cgroupsPath'值是无效的，如果是这种情况，必须产生一个错误。
 
-Implementations of the Spec can choose to name cgroups in any manner.
-The Spec does not include naming schema for cgroups.
-The Spec does not support per-controller paths for the reasons discussed in the [cgroupv2 documentation][cgroup-v2].
-The cgroups will be created if they don't exist.
+如果指定了该值，则在给定相同的 `cgroupsPath` 值的情况下，运行时必须始终附加到 cgroups hierarchy 中的相同位置。如果未指定该值，运行时可能会定义默认的 cgroups 路径。运行时可能会认为某些 `cgroupsPath` 值无效，如果是这种情况，则必须生成错误。
 
-You can configure a container's cgroups via the `resources` field of the Linux configuration.
-Do not specify `resources` unless limits have to be updated.
-For example, to run a new process in an existing container without updating limits, `resources` need not be specified.
+本规范的实现可以选择以任何方式来命名cgroups。
+本规范不包括 cgroups 的命名模式。
+由于 [cgroupv2文档][cgroup-v2] 中讨论的原因，本规范不支持每个控制器的路径。
+如果 cgroup 不存在，就会被创建。
 
-Runtimes MAY attach the container process to additional cgroup controllers beyond those necessary to fulfill the `resources` settings.
+你可以通过 Linux 配置中的 `resources` 字段来配置容器的 cgroups。
+不要指定`resources`，除非必须更新限制。
+例如，要在现有的容器中运行一个新的进程而不更新限制，就不需要指定 `resources`。
+
+运行时可能会将容器进程附加到额外的 cgroup 控制器上，而不是满足 `resources` 设置所需的那些控制器。
 
 ### Cgroup ownership
 
