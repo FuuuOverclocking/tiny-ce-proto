@@ -22,3 +22,15 @@
 ## Tiny CE 的规范
 
 参见 [docs/tiny-ce-spec.md](docs/oci-runtime-spec-1.1-alpha/index.md).
+
+## 参考资料
+
+- Container Runtime in Rust
+    - https://github.com/penumbra23/pura
+    - https://itnext.io/container-runtime-in-rust-part-0-7af709415cda
+    - https://itnext.io/container-runtime-in-rust-part-i-7bd9a434c50a
+    - https://itnext.io/container-runtime-in-rust-part-ii-9c88e99d8cbc
+- youki
+    - 生产级的
+    - https://github.com/containers/youki
+    - https://containers.github.io/youki/

@@ -36,3 +36,7 @@ JSON对象中的条目顺序并不重要。
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
 
 [namespaces.7]: http://man7.org/linux/man-pages/man7/namespaces.7.html
+
+---
+
+通过 www.DeepL.com/Translator（免费版）翻译, 然后手工校对。

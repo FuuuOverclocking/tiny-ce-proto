@@ -19,3 +19,7 @@
 
 
 [socket-activated-containers]: http://0pointer.de/blog/projects/socket-activated-containers.html
+
+---
+
+通过 www.DeepL.com/Translator（免费版）翻译, 然后手工校对。

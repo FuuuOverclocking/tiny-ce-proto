@@ -979,3 +979,7 @@
 [stdin.3]: http://man7.org/linux/man-pages/man3/stdin.3.html
 [uts-namespace.7]: http://man7.org/linux/man-pages/man7/namespaces.7.html
 [zonecfg.1m]: http://docs.oracle.com/cd/E86824_01/html/E54764/zonecfg-1m.html
+
+---
+
+通过 www.DeepL.com/Translator（免费版）翻译, 然后手工校对。
