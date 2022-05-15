@@ -13,27 +13,30 @@ Open Container Initiative Runtime Specification 旨在指定容器的配置、�
 
 本规范所定义的平台有。
 
-* `linux`: [runtime.md](运行时.md), [config.md](配置.md), [config-linux.md](配置-linux.md), 和 [runime-linux.md](运行时-linux.md)。
-* `solaris`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-solaris.md](config-solaris.md)。
-* `windows`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-windows.md](config-windows.md)。
-* `vm`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-vm.md](config-vm.md)。
-* `zos`: [runtime.md](runtime.md), [config.md](config.md), 及 [config-zos.md](config-zos.md)。
+* `linux`: [runtime.md](runtime.md), [config.md](config.md), [config-linux.md](config-linux.md), 和 [runime-linux.md](runime-linux.md)。
+
+> 未翻译:
+> 
+> * `solaris`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-solaris.md](config-solaris.md)。
+> * `windows`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-windows.md](config-windows.md)。
+> * `vm`: [runtime.md](runtime.md), [config.md](config.md), 以及 [config-vm.md](config-vm.md)。
+> * `zos`: [runtime.md](runtime.md), [config.md](config.md), 及 [config-zos.md](config-zos.md)。
 
 # <a name="ociRuntimeSpecTOC" />Table of Contents
 
-- [简介](spec.md)
+- 简介
     - [符号约定](#notational-conventions)
-    - [容器原则](principles.md)
+    - 容器原则
 - [文件系统包](bundle.md)
 - [运行时和生命周期](runtime.md)
     - [Linux 特定的运行时和生命周期](runtime-linux.md)
 - [配置](config.md)
-    - [Linux 专用配置](config-linux.md)
-    - [Solaris 专用配置](config-solaris.md)
-    - [Windows 专用配置](config-windows.md)
-    - [虚拟机专用配置](config-vm.md)
-    - [z/OS专用配置](config-zos.md)
-- [术语]( glossary.md)
+    - Linux 专用配置
+    - Solaris 专用配置
+    - Windows 专用配置
+    - 虚拟机专用配置
+    - z/OS专用配置
+- [术语](glossary.md)
 
 # <a name="ociRuntimeSpecNotationalConventions" />符号约定
 

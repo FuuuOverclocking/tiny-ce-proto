@@ -11,8 +11,8 @@
 这包括以下两个工件。
 
 1. <a name="containerFormat01" />`config.json`: 包含配置数据。
-    这个必须的文件必须位于捆绑目录的根部，并且必须命名为`config.json'。
-    参见[`config.json`](config.md)了解更多细节。
+    这个必须的文件必须位于捆绑目录的根部，并且必须命名为`config.json`。
+    参见 [`config.json`](config.md) 了解更多细节。
 
 2. <a name="containerFormat02" />容器的根文件系统：由 [`root.path`](config.md#root) 引用的目录，如果该属性在 `config.json` 中设置。
 

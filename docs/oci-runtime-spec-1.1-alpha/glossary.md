@@ -30,7 +30,7 @@ JSON对象中的条目顺序并不重要。
 
 ## <a name=" glossaryRuntimeNamespace" />运行时命名空间
 
-在 Linux 上，新的 [容器命名空间](#container-namespace) 是[创建](config-linux.md#namespaces) 的命名空间，一些配置的资源也是从这里访问的。
+在 Linux 上，从该命名空间 [创建](config-linux.md#namespaces) 新的 [容器命名空间](#container-namespace)，一些配置的资源也是从这里访问的。
 
 [JSON]: https://tools.ietf.org/html/rfc8259
 [UTF-8]: http://www.unicode.org/versions/Unicode8.0.0/ch03.pdf
