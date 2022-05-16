@@ -913,3 +913,7 @@ Seccomp 的配置允许人们配置对匹配的系统调用所采取的行动，
 [zero.4]: http://man7.org/linux/man-pages/man4/zero.4.html
 [user-namespaces]: http://man7.org/linux/man-pages/man7/user_namespaces.7.html
 [intel-rdt-cat-kernel-interface]: https://www.kernel.org/doc/Documentation/x86/intel_rdt_ui.txt
+
+---
+
+通过 www.DeepL.com/Translator（免费版）翻译, 然后手工校对。
