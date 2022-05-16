@@ -207,44 +207,30 @@ cgroupsPath 的值必须是一个绝对路径或一个相对路径。
 
 运行时可能会将容器进程附加到额外的 cgroup 控制器上，而不是满足 `resources` 设置所需的那些控制器。
 
-### Cgroup ownership
+### Cgroup 所有权
 
-Runtimes MAY, according to the following rules, change (or cause to
-be changed) the owner of the container's cgroup to the host uid that
-maps to the value of `process.user.uid` in the [container
-namespace](glossary.md#container-namespace); that is, the user that
-will execute the container process.
+根据下面的规则，运行时可以将容器的 cgroup 的所有者改变（或导致改变）为与[容器命名空间](glossary.md#container-namespace)中 `process.user.uid` 的值相对应的主机 uid；也就是说，将执行容器进程的用户。
 
-Runtimes SHOULD NOT change the ownership of container cgroups when
-cgroups v1 is in use.  Cgroup delegation is not secure in cgroups
-v1.
+当 cgroups v1 正在使用时，运行时不应该改变容器 cgroup 的所有权。在 cgroups v1 中，cgroup delegation 是不安全的。
 
-A runtime SHOULD NOT change the ownership of a container cgroup
-unless it will also create a new cgroup namespace for the container.
-Typically this occurs when the `linux.namespaces` array contains an
-object with `type` equal to `"cgroup"` and `path` unset.
+运行时不应该改变容器 cgroup 的所有权，除非它还将为该容器创建一个新的 cgroup 命名空间。
+通常情况下，当 `linux.namespaces` 数组中包含一个对象，其 `type` 等于 `cgroup`，`path` 未设置。
 
-Runtimes SHOULD change the cgroup ownership if and only if the
-cgroup filesystem is to be mounted read/write; that is, when the
-configuration's `mounts` array contains an object where:
+运行时应该改变cgroup的所有权，当且仅当 cgroup 文件系统将被挂载为 read/write；也就是说，当
+配置的 `mounts` 数组包含一个对象，其中：
 
-- The `source` field is equal to `"cgroup"`
-- The `destination` field is equal to `"/sys/fs/cgroup"`
-- The `options` field does not contain the value `"ro"`
+- `source` 字段等于 `cgroup`
+- `destination` 字段等于 `/sys/fs/cgroup`
+- `options` 字段不包含值 `"ro"`
 
-If the configuration does not specify such a mount, the runtime
-SHOULD NOT change the cgroup ownership.
+如果配置中没有指定这样的挂载，运行时不应改变 cgroup 的所有权。
 
-A runtime that changes the cgroup ownership SHOULD only change the
-ownership of the container's cgroup directory and files within that
-directory that are listed in `/sys/kernel/cgroup/delegate`.  See
-`cgroups(7)` for details about this file.  Note that not all files
-listed in `/sys/kernel/cgroup/delegate` necessarily exist in every
-cgroup.  Runtimes MUST NOT fail in this scenario, and SHOULD change
-the ownership of the listed files that do exist in the cgroup.
+改变了 cgroup 所有权的运行时，应该只改变容器的 cgroup 目录和该目录中的文件的所有权。
+目录中的文件的所有权，这些文件列在 `/sys/kernel/cgroup/delegate` 中。 参见
+`cgroups(7)` 了解关于这个文件的细节。注意，并非所有列在 `/sys/kernel/cgroup/delegate`
+中的文件都一定存在于每个 cgroup 中。在这种情况下，运行时不能失败，并且应该改变 cgroup 中确实存在的所列文件的所有权。
 
-If the `/sys/kernel/cgroup/delegate` file does not exist, the
-runtime MUST fall back to using the following list of files:
+如果 `/sys/kernel/cgroup/delegate` 文件不存在，则运行时必须退回到使用以下文件列表。
 
 ```
 cgroup.procs
@@ -252,11 +238,11 @@ cgroup.subtree_control
 cgroup.threads
 ```
 
-The runtime SHOULD NOT change the ownership of any other files.
-Changing other files may allow the container to elevate its own
-resource limits or perform other unwanted behaviour.
+运行时不应该改变任何其他文件的所有权。
+改变其他文件可能会使容器提高自己的
+资源限制或执行其他不需要的行为。
 
-### Example
+### 例子
 
 ```json
 "cgroupsPath": "/myRuntime/myContainer",
@@ -274,22 +260,22 @@ resource limits or perform other unwanted behaviour.
 }
 ```
 
-### <a name="configLinuxDeviceAllowedlist" />Allowed Device list
+### <a name="configLinuxDeviceAllowedlist" />允许的设备列表
 
-**`devices`** (array of objects, OPTIONAL) configures the [allowed device list][cgroup-v1-devices].
-The runtime MUST apply entries in the listed order.
+**`devices`** (object[]，OPTIONAL) 配置 [允许的设备列表][cgroup-v1-devices]。
+运行时必须按照列出的顺序应用条目。
 
-Each entry has the following structure:
+每个条目有以下结构：
 
-* **`allow`** *(boolean, REQUIRED)* - whether the entry is allowed or denied.
-* **`type`** *(string, OPTIONAL)* - type of device: `a` (all), `c` (char), or `b` (block).
-    Unset values mean "all", mapping to `a`.
-* **`major, minor`** *(int64, OPTIONAL)* - [major, minor numbers][devices] for the device.
-    Unset values mean "all", mapping to [`*` in the filesystem API][cgroup-v1-devices].
-* **`access`** *(string, OPTIONAL)* - cgroup permissions for device.
-    A composition of `r` (read), `w` (write), and `m` (mknod).
+- **`allow`** *(boolean, REQUIRED)* - 该条目是否被允许或拒绝。
+- **`type`** *(string, OPTIONAL)* - 设备的类型：`a` (所有)，`c` (char)，或 `b` (block)。
+    未设置的值意味着 "all"，映射到 `a`。
+- **`major, minor`** *(int64, OPTIONAL)* - 设备的[major, minor 数字][devices]。
+    未设置的值意味着 "all"，映射到[文件系统 API 中的`*`][cgroup-v1-devices]。
+- **`access`** *(string, OPTIONAL)* - 设备的cgroup权限。
+    由`r`（读）、`w`（写）和`m`（mknod）组成。
 
-#### Example
+#### 例子
 
 ```json
 "devices": [
@@ -316,29 +302,29 @@ Each entry has the following structure:
 
 ### <a name="configLinuxMemory" />Memory
 
-**`memory`** (object, OPTIONAL) represents the cgroup subsystem `memory` and it's used to set limits on the container's memory usage.
-For more information, see the kernel cgroups documentation about [memory][cgroup-v1-memory].
+**`memory`** (object, OPTIONAL) 代表 cgroup 子系统 `memory`，它用于设置容器的内存使用限制。
+更多信息，请参见内核 cgroup 文档中的 [memory][cgroup-v1-memory]。
 
-Values for memory specify the limit in bytes, or `-1` for unlimited memory.
+内存的值以字节为单位指定限制，或以 `-1` 表示无限的内存。
 
-* **`limit`** *(int64, OPTIONAL)* - sets limit of memory usage
-* **`reservation`** *(int64, OPTIONAL)* - sets soft limit of memory usage
-* **`swap`** *(int64, OPTIONAL)* - sets limit of memory+Swap usage
-* **`kernel`** *(int64, OPTIONAL, NOT RECOMMENDED)* - sets hard limit for kernel memory
-* **`kernelTCP`** *(int64, OPTIONAL, NOT RECOMMENDED)* - sets hard limit for kernel TCP buffer memory
+- **`limit`** *(int64, OPTIONAL)* - 设置内存使用限制
+- **`reservation`** *(int64, OPTIONAL)* - 设置内存使用的软限制。
+- **`swap`** *(int64, OPTIONAL)* - 设置 内存+Swap 的使用限制。
+- **`kernel`** *(int64, OPTIONAL, NOT RECOMMENDED)* - 设置内核内存的硬限制。
+- **`kernelTCP`** *(int64, OPTIONAL, NOT RECOMMENDED)* - 设置内核TCP缓冲区内存的硬限制。
 
-The following properties do not specify memory limits, but are covered by the `memory` controller:
+以下属性没有指定内存限制，但被 `memory` 控制器所覆盖:
 
-* **`swappiness`** *(uint64, OPTIONAL)* - sets swappiness parameter of vmscan (See sysctl's vm.swappiness)
-    The values are from 0 to 100. Higher means more swappy.
-* **`disableOOMKiller`** *(bool, OPTIONAL)* - enables or disables the OOM killer.
-    If enabled (`false`), tasks that attempt to consume more memory than they are allowed are immediately killed by the OOM killer.
-    The OOM killer is enabled by default in every cgroup using the `memory` subsystem.
-    To disable it, specify a value of `true`.
-* **`useHierarchy`** *(bool, OPTIONAL)* - enables or disables hierarchical memory accounting.
-    If enabled (`true`), child cgroups will share the memory limits of this cgroup.
+- **`swappiness`** *(uint64, OPTIONAL)* - 设置vmscan的swappiness参数(见sysctl的vm.swappiness)
+    值从0到100。更高的值意味着更多的互换性。
+- **`disableOOMKiller`** *(bool, OPTIONAL)* - 启用或禁用 OOM killer。
+    如果启用(`false`)，试图消耗超过其允许的内存的任务将立即被 OOM killer 杀死。
+    OOM killer 在每个使用 `memory` 子系统的 cgroup 中默认是启用的。
+    要禁用它，请指定为 `true`。
+- **`useHierarchy`** *(bool, OPTIONAL)* - 启用或禁用分层内存审计。
+    如果启用(`true`)，子 cgroups 将共享这个 cgroup 的内存限制。
 
-#### Example
+#### 例子
 
 ```json
 "memory": {
@@ -354,21 +340,21 @@ The following properties do not specify memory limits, but are covered by the `m
 
 ### <a name="configLinuxCPU" />CPU
 
-**`cpu`** (object, OPTIONAL) represents the cgroup subsystems `cpu` and `cpusets`.
-For more information, see the kernel cgroups documentation about [cpusets][cgroup-v1-cpusets].
+**`cpu`** (object, OPTIONAL) 代表 cgroup 子系统 `cpu` 和 `cpusets`。
+更多信息，请参阅内核 cgroups 文档中关于 [cpusets][cgroup-v1-cpusets] 的内容。
 
-The following parameters can be specified to set up the controller:
+可以指定以下参数来设置控制器。
 
-* **`shares`** *(uint64, OPTIONAL)* - specifies a relative share of CPU time available to the tasks in a cgroup
-* **`quota`** *(int64, OPTIONAL)* - specifies the total amount of time in microseconds for which all tasks in a cgroup can run during one period (as defined by **`period`** below)
-* **`period`** *(uint64, OPTIONAL)* - specifies a period of time in microseconds for how regularly a cgroup's access to CPU resources should be reallocated (CFS scheduler only)
-* **`realtimeRuntime`** *(int64, OPTIONAL)* - specifies a period of time in microseconds for the longest continuous period in which the tasks in a cgroup have access to CPU resources
-* **`realtimePeriod`** *(uint64, OPTIONAL)* - same as **`period`** but applies to realtime scheduler only
-* **`cpus`** *(string, OPTIONAL)* - list of CPUs the container will run in
-* **`mems`** *(string, OPTIONAL)* - list of Memory Nodes the container will run in
-* **`idle`** *(int64, OPTIONAL)* - cgroups are configured with minimum weight, 0: default behavior, 1: SCHED_IDLE.
+- **`shares`** *(uint64, OPTIONAL)* - 指定在一个 cgroup 中 tasks 可用的 CPU 时间的相对份额
+- **`quota`** *(int64, OPTIONAL)* - 指定 cgroup 中的所有 tasks 在一个 `period` 内可以运行的总时间（以微秒为单位）（下面定义了 `period`）
+- **`period`** *(uint64, OPTIONAL)* - 指定以微秒为单位的时间段，一个 cgroup 对 CPU 资源的访问应该如何定期重新分配（仅 CFS 调度器）。
+- **`realtimeRuntime`** *(int64, OPTIONAL)* - 以微秒为单位指定 cgroup 中的任务访问 CPU 资源的最长连续时间。
+- **`realtimePeriod`** *(uint64, OPTIONAL)* - 与 **`period`** 相同，但只适用于实时调度器
+- **`cpus`** *(string, OPTIONAL)* - 容器将要运行的CPU的列表
+- **`mems`** *(string, OPTIONAL)* - 容器将运行的内存节点列表
+- **`idle`** *(int64, OPTIONAL)* - cgroups被配置为最小权重，0: 默认行为，1: SCHED_IDLE。
 
-#### Example
+#### 例子
 
 ```json
 "cpu": {
@@ -385,35 +371,35 @@ The following parameters can be specified to set up the controller:
 
 ### <a name="configLinuxBlockIO" />Block IO
 
-**`blockIO`** (object, OPTIONAL) represents the cgroup subsystem `blkio` which implements the block IO controller.
-For more information, see the kernel cgroups documentation about [blkio][cgroup-v1-blkio].
+**`blockIO`** (object, OPTIONAL) 表示 cgroup 子系统 `blkio`，它实现了块状IO控制器。
+更多信息，请参见内核 cgroup 文档中关于[blkio][cgroup-v1-blkio]。
 
-The following parameters can be specified to set up the controller:
+可以指定以下参数来设置控制器。
 
-* **`weight`** *(uint16, OPTIONAL)* - specifies per-cgroup weight. This is default weight of the group on all devices until and unless overridden by per-device rules.
-* **`leafWeight`** *(uint16, OPTIONAL)* - equivalents of `weight` for the purpose of deciding how much weight tasks in the given cgroup has while competing with the cgroup's child cgroups.
-* **`weightDevice`** *(array of objects, OPTIONAL)* - an array of per-device bandwidth weights.
-    Each entry has the following structure:
-    * **`major, minor`** *(int64, REQUIRED)* - major, minor numbers for device.
-        For more information, see the [mknod(1)][mknod.1] man page.
-    * **`weight`** *(uint16, OPTIONAL)* - bandwidth weight for the device.
-    * **`leafWeight`** *(uint16, OPTIONAL)* - bandwidth weight for the device while competing with the cgroup's child cgroups, CFQ scheduler only
+- **`weight`** *(uint16, OPTIONAL)* - 指定每个 cgroup 的 weight。这是该组在所有设备上的默认权重，除非被每个设备的规则覆盖。
+- **`leafWeight`** *(uint16, OPTIONAL)* - 等同于 `weight`，用于决定给定 cgroup 中的任务在与c组的子c组竞争时有多少权重。
+- **`weightDevice`** *(array of objects, OPTIONAL)* - 每个设备的带宽权重数组。
+    每个条目都有以下结构。
+    - **`major, minor`** *(int64, REQUIRED)* - 设备的 major, minor 数字。
+        更多信息请参见 [mknod(1)][mknod.1] man page。
+    - **`weight`** *(uint16, OPTIONAL)* - 设备的带宽权重。
+    - **`leafWeight`** *(uint16, OPTIONAL)* - 设备与 cgroup 的子 cgroup 竞争时的带宽权重，仅适用于 CFQ 调度器
 
-    You MUST specify at least one of `weight` or `leafWeight` in a given entry, and MAY specify both.
+    你必须在给定的条目中至少指定 `weight` 或 `leafWeight` 中的一个，并且可以同时指定。
 
-* **`throttleReadBpsDevice`**, **`throttleWriteBpsDevice`** *(array of objects, OPTIONAL)* - an array of per-device bandwidth rate limits.
-    Each entry has the following structure:
-    * **`major, minor`** *(int64, REQUIRED)* - major, minor numbers for device.
-        For more information, see the [mknod(1)][mknod.1] man page.
-    * **`rate`** *(uint64, REQUIRED)* - bandwidth rate limit in bytes per second for the device
+- **`throttleReadBpsDevice`**, **`throttleWriteBpsDevice`** *(array of objects, OPTIONAL)* - 每个设备的带宽速率限制数组。
+    每个条目都有以下结构。
+    - **`major, minor`** *(int64, REQUIRED)* - 设备的 major, minor 数字。
+        更多信息请参见 [mknod(1)][mknod.1] man page。
+    - **`rate`** *(uint64, REQUIRED)* - 设备的带宽速率限制，单位为 字节/秒
 
-* **`throttleReadIOPSDevice`**, **`throttleWriteIOPSDevice`** *(array of objects, OPTIONAL)* - an array of per-device IO rate limits.
-    Each entry has the following structure:
-    * **`major, minor`** *(int64, REQUIRED)* - major, minor numbers for device.
-        For more information, see the [mknod(1)][mknod.1] man page.
-    * **`rate`** *(uint64, REQUIRED)* - IO rate limit for the device
+- **`throttleReadIOPSDevice`**, **`throttleWriteIOPSDevice`** *(array of objects, OPTIONAL)* - 每个设备的IO速率限制数组。
+    每个条目都有以下结构。
+    - **`major, minor`** *(int64, REQUIRED)* - 设备的 major, minor 数字。
+        更多信息，请参阅 [mknod(1)][mknod.1] man page。
+    - **`rate`** *(uint64, REQUIRED)* - 设备的IO速率限制
 
-#### Example
+#### 示例
 
 ```json
 "blockIO": {
@@ -451,19 +437,18 @@ The following parameters can be specified to set up the controller:
 
 ### <a name="configLinuxHugePageLimits" />Huge page limits
 
-**`hugepageLimits`** (array of objects, OPTIONAL) represents the `hugetlb` controller which allows to limit the
-HugeTLB usage per control group and enforces the controller limit during page fault.
-For more information, see the kernel cgroups documentation about [HugeTLB][cgroup-v1-hugetlb].
+**`hugepageLimits`** (object[]，OPTIONAL) 代表 `hugetlb` 控制器，它允许限制每个控制组的
+HugeTLB 的使用，并在页面故障时执行控制器的限制。
+更多信息，请参阅内核 cgroups 关于 [HugeTLB][cgroup-v1-hugetlb] 的文档。
 
-Each entry has the following structure:
+每个条目都有以下结构。
 
-* **`pageSize`** *(string, REQUIRED)* - hugepage size
-    The value has the format `<size><unit-prefix>B` (64KB, 2MB, 1GB), and must match the `<hugepagesize>` of the
-    corresponding control file found in `/sys/fs/cgroup/hugetlb/hugetlb.<hugepagesize>.limit_in_bytes`.
-    Values of `<unit-prefix>` are intended to be parsed using base 1024 ("1KB" = 1024, "1MB" = 1048576, etc).
-* **`limit`** *(uint64, REQUIRED)* - limit in bytes of *hugepagesize* HugeTLB usage
+- **`pageSize`** *(string, REQUIRED)* - hugepage size.
+    这个值的格式是 `<size><unit-prefix>B` (64KB, 2MB, 1GB)，并且必须与在 `/sys/fs/cgroup/hugetlb/hugetlb.<hugepagesize>.limit_in_bytes` 中找到的相应控制文件的 `<hugepagesize>`相匹配。
+    `<unit-prefix>` 的值旨在使用 1024 进制进行解析（"1KB"=1024，"1MB"=1048576，等等）。
+- **limit`** *(uint64, REQUIRED)* - *hugepagesize* HugeTLB使用的字节数限制
 
-#### Example
+#### 例子
 
 ```json
 "hugepageLimits": [
@@ -480,18 +465,18 @@ Each entry has the following structure:
 
 ### <a name="configLinuxNetwork" />Network
 
-**`network`** (object, OPTIONAL) represents the cgroup subsystems `net_cls` and `net_prio`.
-For more information, see the kernel cgroups documentations about [net\_cls cgroup][cgroup-v1-net-cls] and [net\_prio cgroup][cgroup-v1-net-prio].
+**`network`** (object, OPTIONAL) 代表 cgroup 子系统 `net_cls` 和 `net_prio`。
+更多信息，请参阅内核cgroup文档中关于[net_cls cgroup][cgroup-v1-net-cls]和[net_prio cgroup][cgroup-v1-net-prio]的内容。
 
-The following parameters can be specified to set up the controller:
+可以指定以下参数来设置控制器。
 
-* **`classID`** *(uint32, OPTIONAL)* - is the network class identifier the cgroup's network packets will be tagged with
-* **`priorities`** *(array of objects, OPTIONAL)* - specifies a list of objects of the priorities assigned to traffic originating from processes in the group and egressing the system on various interfaces.
-    The following parameters can be specified per-priority:
-    * **`name`** *(string, REQUIRED)* - interface name in [runtime network namespace](glossary.md#runtime-namespace)
-    * **`priority`** *(uint32, REQUIRED)* - priority applied to the interface
+- **`classID`** *(uint32, OPTIONAL)* - 是网络类标识符，cgroup 的网络数据包将被标记。
+- **`priorities`** *(object[], OPTIONAL)* - 一个对象列表，指定分配给来自组内进程，在不同接口上离开系统的流量的优先级。
+    可以为每个条目指定以下参数。
+    - **`name`** *(string, REQUIRED)* - [runtime network namespace](glossary.md#runtime-namespace) 中的接口名称。
+    - **`priority`** *(uint32, REQUIRED)* - 应用于该接口的优先级
 
-#### Example
+#### 示例
 
 ```json
 "network": {
@@ -511,14 +496,14 @@ The following parameters can be specified to set up the controller:
 
 ### <a name="configLinuxPIDS" />PIDs
 
-**`pids`** (object, OPTIONAL) represents the cgroup subsystem `pids`.
-For more information, see the kernel cgroups documentation about [pids][cgroup-v1-pids].
+**`pids`** (object, OPTIONAL) 表示 cgroup 子系统的 `pids`。
+更多信息，请参阅内核 cgroup 文档中关于 [pids][cgroup-v1-pids] 的内容。
 
-The following parameters can be specified to set up the controller:
+可以指定以下参数来设置控制器。
 
-* **`limit`** *(int64, REQUIRED)* - specifies the maximum number of tasks in the cgroup
+- **`limit`** *(int64, REQUIRED)* - 指定 cgroup 中 tasks 的最大数量
 
-#### Example
+#### 例子
 
 ```json
 "pids": {
@@ -528,18 +513,17 @@ The following parameters can be specified to set up the controller:
 
 ### <a name="configLinuxRDMA" />RDMA
 
-**`rdma`** (object, OPTIONAL) represents the cgroup subsystem `rdma`.
-For more information, see the kernel cgroups documentation about [rdma][cgroup-v1-rdma].
+**`rdma`** (object, OPTIONAL) 代表 cgroup 子系统 `rdma`。
+更多信息，请看内核 cgroup 文档关于 [rdma][cgroup-v1-rdma]。
 
-The name of the device to limit is the entry key.
-Entry values are objects with the following properties:
+要限制的设备的名称是各个条目的 key。条目的 value 是具有以下属性的对象。
 
-* **`hcaHandles`** *(uint32, OPTIONAL)* - specifies the maximum number of hca_handles in the cgroup
-* **`hcaObjects`** *(uint32, OPTIONAL)* - specifies the maximum number of hca_objects in the cgroup
+- **`hcaHandles`** *(uint32, OPTIONAL)* - 指定 cgroup 中 hca_handles 的最大数量
+- **`hcaObjects`** *(uint32, OPTIONAL)* - 指定 cgroup 中 hca_objects 的最大数量。
 
-You MUST specify at least one of the `hcaHandles` or `hcaObjects` in a given entry, and MAY specify both.
+你必须在一个给定的条目中至少指定一个 `hcaHandles` 或 `hcaObjects`，也可以同时指定。
 
-#### Example
+#### 示例
 
 ```json
 "rdma": {
@@ -558,17 +542,17 @@ You MUST specify at least one of the `hcaHandles` or `hcaObjects` in a given ent
 
 ## <a name="configLinuxUnified" />Unified
 
-**`unified`** (object, OPTIONAL) allows cgroup v2 parameters to be to be set and modified for the container.
+**`unified`** (object, OPTIONAL) 允许为容器设置和修改 cgroup v2 参数。
 
-Each key in the map refers to a file in the cgroup unified hierarchy.
+Map 中的每个 key 指的是 cgroup unified hierarchy 中的一个文件。
 
-The OCI runtime MUST ensure that the needed cgroup controllers are enabled for the cgroup.
+OCI 运行时必须确保为 cgroup 启用所需的 cgroup 控制器。
 
-Configuration unknown to the runtime MUST still be written to the relevant file.
+运行时未知的配置必须仍然被写入相关文件。
 
-The runtime MUST generate an error when the configuration refers to a cgroup controller that is not present or that cannot be enabled.
+当配置指的是一个不存在或无法启用的 cgroup 控制器时，运行时必须产生一个错误。
 
-### Example
+### 例子
 
 ```json
 "unified": {
@@ -577,10 +561,9 @@ The runtime MUST generate an error when the configuration refers to a cgroup con
 }
 ```
 
-If a controller is enabled on the cgroup v2 hierarchy but the configuration is provided for the cgroup v1 equivalent controller, the runtime MAY attempt a conversion.
+如果控制器在 cgroup v2 层次结构上被启用，但配置是为 cgroup v1 对应的控制器提供的，则运行时可能会尝试转换。
 
-If the conversion is not possible the runtime MUST generate an error.
-
+如果转换不成功，运行时必须产生一个错误。
 ## <a name="configLinuxIntelRdt" />IntelRdt
 
 **`intelRdt`** (object, OPTIONAL) represents the [Intel Resource Director Technology][intel-rdt-cat-kernel-interface].
@@ -642,12 +625,13 @@ and may use a maximum memory bandwidth of 20% on socket 0 and 70% on socket 1.
 }
 ```
 
+
 ## <a name="configLinuxSysctl" />Sysctl
 
-**`sysctl`** (object, OPTIONAL) allows kernel parameters to be modified at runtime for the container.
-For more information, see the [sysctl(8)][sysctl.8] man page.
+**`sysctl`** (object, OPTIONAL) 允许在运行时为容器修改内核参数。
+更多信息，请参阅 [sysctl(8)][sysctl.8] man page。
 
-### Example
+### 例子
 
 ```json
 "sysctl": {
@@ -658,22 +642,22 @@ For more information, see the [sysctl(8)][sysctl.8] man page.
 
 ## <a name="configLinuxSeccomp" />Seccomp
 
-Seccomp provides application sandboxing mechanism in the Linux kernel.
-Seccomp configuration allows one to configure actions to take for matched syscalls and furthermore also allows matching on values passed as arguments to syscalls.
-For more information about Seccomp, see [Seccomp][seccomp] kernel documentation.
-The actions, architectures, and operators are strings that match the definitions in seccomp.h from [libseccomp][] and are translated to corresponding values.
+Seccomp 在 Linux 内核中提供应用沙箱机制。
+Seccomp 的配置允许人们配置对匹配的系统调用所采取的行动，此外还允许对作为参数传递给系统调用的值进行匹配。
+关于 Seccomp 的更多信息，请参见 [Seccomp][seccomp] 内核文档。
+动作、架构和操作符是与 [libseccomp][] 的 seccomp.h 中的定义相匹配的字符串，并被翻译成相应的值。
 
 **`seccomp`** (object, OPTIONAL)
 
-The following parameters can be specified to set up seccomp:
+可以指定以下参数来设置seccomp。
 
-* **`defaultAction`** *(string, REQUIRED)* - the default action for seccomp. Allowed values are the same as `syscalls[].action`.
-* **`defaultErrnoRet`** *(uint, OPTIONAL)* - the errno return code to use.
-    Some actions like `SCMP_ACT_ERRNO` and `SCMP_ACT_TRACE` allow to specify the errno code to return.
-    When the action doesn't support an errno, the runtime MUST print and error and fail.
-    If not specified then its default value is `EPERM`.
-* **`architectures`** *(array of strings, OPTIONAL)* - the architecture used for system calls.
-    A valid list of constants as of libseccomp v2.5.0 is shown below.
+- **`defaultAction`** *(string, REQUIRED)* - seccomp 的默认动作。允许的值与 `syscalls[].action` 相同。
+- **`defaultErrnoRet`** *(uint, OPTIONAL)* - 使用的 Errno 返回代码。
+    一些动作如 `SCMP_ACT_ERRNO` 和 `SCMP_ACT_TRACE` 允许指定返回的 Errno 代码。
+    当动作不支持 errno 时，运行时必须打印错误并失败。
+    如果没有指定，那么其默认值为 `EPERM` 。
+- **`architectures`** *(array of strings, OPTIONAL)* - 用于系统调用的架构。
+    libseccomp v2.5.0 的有效常量列表如下。
 
     * `SCMP_ARCH_X86`
     * `SCMP_ARCH_X86_64`
@@ -695,38 +679,38 @@ The following parameters can be specified to set up seccomp:
     * `SCMP_ARCH_PARISC64`
     * `SCMP_ARCH_RISCV64`
 
-* **`flags`** *(array of strings, OPTIONAL)* - list of flags to use with seccomp(2).
+- **`flags`** *(字符串数组，可选的)* - 与 seccomp(2) 一起使用的标志列表。
 
-    A valid list of constants is shown below.
+    一个有效的常量列表如下所示。
 
     * `SECCOMP_FILTER_FLAG_TSYNC`
     * `SECCOMP_FILTER_FLAG_LOG`
     * `SECCOMP_FILTER_FLAG_SPEC_ALLOW`
 
-* **`listenerPath`** *(string, OPTIONAL)* - specifies the path of UNIX domain socket over which the runtime will send the [container process state](#containerprocessstate) data structure when the `SCMP_ACT_NOTIFY` action is used.
-    This socket MUST use `AF_UNIX` domain and `SOCK_STREAM` type.
-    The runtime MUST send exactly one [container process state](#containerprocessstate) per connection.
-    The connection MUST NOT be reused and it MUST be closed after sending a seccomp state.
-    If sending to this socket fails, the runtime MUST [generate an error](runtime.md#errors).
-    If the `SCMP_ACT_NOTIFY` action is not used this value is ignored.
+- **`listenerPath`** *(string, OPTIONAL)* - 指定 UNIX 域套接字的路径，当使用 `SCMP_ACT_NOTIFY` 动作时，运行时将通过它发送[容器进程状态](#containerprocessstate) 数据结构。
+    这个套接字必须使用 `AF_UNIX` 域和 `SOCK_STREAM` 类型。
+    运行时必须为每个连接准确发送一个[容器进程状态](#containerprocessstate)。
+    该连接不得重复使用，在发送一个 seccomp 状态后必须关闭。
+    如果向该套接字发送失败，运行时必须[产生一个错误](runtime.md#errors)。
+    如果没有使用 `SCMP_ACT_NOTIFY` 动作，这个值会被忽略。
 
-    The runtime sends the following file descriptors using `SCM_RIGHTS` and set their names in the `fds` array of the [container process state](#containerprocessstate):
+    运行时使用 `SCM_RIGHTS` 发送以下文件描述符，并在[容器进程状态](#containerprocessstate)的 `fds`数组中设置其名称。
 
-    * **`seccompFd`** (string, REQUIRED) is the seccomp file descriptor returned by the seccomp syscall.
+    - **`seccompFd`** (string, REQUIRED) 是 seccomp syscall 返回的 seccomp 文件描述符。
 
-* **`listenerMetadata`** *(string, OPTIONAL)* - specifies an opaque data to pass to the seccomp agent.
-    This string will be sent as the `metadata` field in the [container process state](#containerprocessstate).
-    This field MUST NOT be set if `listenerPath` is not set.
+- **`listenerMetadata`** *(string, OPTIONAL)* - 指定一个不透明的数据传递给seccomp代理。
+    这个字符串将作为[容器进程状态](#containerprocessstate)中的`metadata`字段发送。
+    如果没有设置`listenerPath'，这个字段一定不能设置。
 
-* **`syscalls`** *(array of objects, OPTIONAL)* - match a syscall in seccomp.
-    While this property is OPTIONAL, some values of `defaultAction` are not useful without `syscalls` entries.
-    For example, if `defaultAction` is `SCMP_ACT_KILL` and `syscalls` is empty or unset, the kernel will kill the container process on its first syscall.
-    Each entry has the following structure:
+- **`syscalls`** *(对象数组，OPTIONAL)* - 匹配 seccomp 中的 syscall。
+    虽然这个属性是 OPTIONAL，但如果没有 `syscalls` 条目，`defaultAction` 的某些值就没有用。
+    例如，如果`defaultAction`是`SCMP_ACT_KILL`，而`syscalls`为空或未设置，内核将在容器进程的第一个系统调用中杀死它。
+    每个条目都有以下结构。
 
-    * **`names`** *(array of strings, REQUIRED)* - the names of the syscalls.
-        `names` MUST contain at least one entry.
-    * **`action`** *(string, REQUIRED)* - the action for seccomp rules.
-        A valid list of constants as of libseccomp v2.5.0 is shown below.
+    - **`names`** *（字符串数组，必须）* - 系统调用的名称。
+        `names`必须至少包含一个条目。
+    - **`action`** *(string, REQUIRED)* - seccomp规则的动作。
+        libseccomp v2.5.0的有效常量列表如下。
 
         * `SCMP_ACT_KILL`
         * `SCMP_ACT_KILL_PROCESS`
@@ -738,19 +722,19 @@ The following parameters can be specified to set up seccomp:
         * `SCMP_ACT_LOG`
         * `SCMP_ACT_NOTIFY`
 
-    * **`errnoRet`** *(uint, OPTIONAL)* - the errno return code to use.
-        Some actions like `SCMP_ACT_ERRNO` and `SCMP_ACT_TRACE` allow to specify the errno code to return.
-        When the action doesn't support an errno, the runtime MUST print and error and fail.
-        If not specified its default value is `EPERM`.
+    - **`errnoRet`** *(uint, OPTIONAL)* - 要使用的errno返回代码。
+        一些动作如 `SCMP_ACT_ERRNO` 和 `SCMP_ACT_TRACE` 允许指定返回的errno代码。
+        当动作不支持errno时，运行时必须打印错误并失败。
+        如果没有指定，其默认值为`EPERM`。
 
-    * **`args`** *(array of objects, OPTIONAL)* - the specific syscall in seccomp.
-        Each entry has the following structure:
+    - **`args`** *(object[]，OPTIONAL)* - seccomp 中的特定系统调用。
+        每个条目都有以下结构。
 
-        * **`index`** *(uint, REQUIRED)* - the index for syscall arguments in seccomp.
-        * **`value`** *(uint64, REQUIRED)* - the value for syscall arguments in seccomp.
-        * **`valueTwo`** *(uint64, OPTIONAL)* - the value for syscall arguments in seccomp.
-        * **`op`** *(string, REQUIRED)* - the operator for syscall arguments in seccomp.
-            A valid list of constants as of libseccomp v2.3.2 is shown below.
+        - **`index`** *(uint, REQUIRED)* - seccomp 中系统调用参数的索引。
+        - **`value`** *(uint64, REQUIRED)* - seccomp 中 syscall 参数的值。
+        - **`valueTwo`** *(uint64, OPTIONAL)* - seccomp 中 syscall 参数的值。
+        - **`op`** *(string, REQUIRED)* - seccomp 中系统调用参数的操作符。
+            libseccomp v2.3.2 的有效常量列表如下。
 
             * `SCMP_CMP_NE`
             * `SCMP_CMP_LT`
@@ -760,7 +744,7 @@ The following parameters can be specified to set up seccomp:
             * `SCMP_CMP_GT`
             * `SCMP_CMP_MASKED_EQ`
 
-### Example
+### 示例
 
 ```json
 "seccomp": {
@@ -781,23 +765,23 @@ The following parameters can be specified to set up seccomp:
 }
 ```
 
-### <a name="containerprocessstate" />The Container Process State
+### <a name="containerprocessstate" />容器进程状态
 
-The container process state is a data structure passed via a UNIX socket.
-The container runtime MUST send the container process state over the UNIX socket as regular payload serialized in JSON and file descriptors MUST be sent using `SCM_RIGHTS`.
-The container runtime MAY use several `sendmsg(2)` calls to send the aforementioned data.
-If more than one `sendmsg(2)` is used, the file descriptors MUST be sent only in the first call.
+容器进程状态是一个通过 UNIX 套接字传递的数据结构。
+容器运行时必须通过 UNIX 套接字将容器进程状态作为常规的有效载荷以 JSON 的形式序列化，文件描述符必须使用 `SCM_RIGHTS` 来发送。
+容器运行时可以使用几个 `sendmsg(2)` 调用来发送上述数据。
+如果使用一个以上的 `sendmsg(2)`，文件描述符必须只在第一次调用中发送。
 
-The container process state includes the following properties:
+容器进程状态包括以下属性。
 
-* **`ociVersion`** (string, REQUIRED) is version of the Open Container Initiative Runtime Specification with which the container process state complies.
-* **`fds`** (array, OPTIONAL) is a string array containing the names of the file descriptors passed.
-    The index of the name in this array corresponds to index of the file descriptors in the `SCM_RIGHTS` array.
-* **`pid`** (int, REQUIRED) is the container process ID, as seen by the runtime.
-* **`metadata`** (string, OPTIONAL) opaque metadata.
-* **`state`** ([state](runtime.md#state), REQUIRED) is the state of the container.
+- **`ociVersion`** (string, REQUIRED) 是容器进程状态符合的Open Container Initiative Runtime Specification的版本。
+- **`fds`** (array, OPTIONAL) 是一个字符串数组，包含所传递的文件描述符的名称。
+    这个数组中的名称索引与`SCM_RIGHTS`数组中的文件描述符的索引相对应。
+- **`pid`** (int, REQUIRED) 是容器进程的ID，由运行时看到。
+- **`metadata`** (string, OPTIONAL) 不透明的元数据。
+- **`state`** （[state](runtime.md#state), REQUIRED）是容器的状态。
 
-Example sending a single `seccompFd` file descriptor in the `SCM_RIGHTS` array:
+在 `SCM_RIGHTS` 阵列中发送单个 `seccompFd` 文件描述符的例子：
 
 ```json
 {
@@ -820,23 +804,23 @@ Example sending a single `seccompFd` file descriptor in the `SCM_RIGHTS` array:
 }
 ```
 
-## <a name="configLinuxRootfsMountPropagation" />Rootfs Mount Propagation
+## <a name="configLinuxRootfsMountPropagation" />Rootfs 挂载传播
 
-**`rootfsPropagation`** (string, OPTIONAL) sets the rootfs's mount propagation.
-Its value is either `shared`, `slave`, `private` or `unbindable`.
-It's worth noting that a peer group is defined as a group of VFS mounts that propagate events to each other.
-A nested container is defined as a container launched inside an existing container.
+**`rootfsPropagation`** (string, OPTIONAL) 设置 rootfs 的挂载传播方式。
+它的值是 `shared`, `slave`, `private` 或 `unbindable`。
+值得注意的是，一个对等组被定义为一组相互传播事件的 VFS 挂载。
+嵌套容器被定义为在一个现有的容器内启动的容器。
 
-* **`shared`**: the rootfs mount belongs to a new peer group.
-    This means that further mounts (e.g. nested containers) will also belong to that peer group and will propagate events to the rootfs.
-    Note this does not mean that it's shared with the host.
-* **`slave`**: the rootfs mount receives propagation events from the host (e.g. if something is mounted on the host it will also appear in the container) but not the other way around.
-* **`private`**: the rootfs mount doesn't receive mount propagation events from the host and further mounts in nested containers will be isolated from the host and from the rootfs (even if the nested container `rootfsPropagation` option is shared).
-* **`unbindable`**: the rootfs mount is a private mount that cannot be bind-mounted.
+- **`shared`**：rootfs挂载属于一个新的对等组。
+    这意味着更多的挂载（例如嵌套容器）也将属于该对等组，并将事件传播到rootfs。
+    注意这并不意味着它是与主机共享的。
+- **`slave`**: rootfs挂载接收来自主机的传播事件（例如，如果有东西挂载在主机上，它也会出现在容器中），但不是反过来的。
+- **`private`**: rootfs挂载不会接收来自主机的挂载传播事件，嵌套容器中的进一步挂载将与主机和rootfs隔离（即使嵌套容器的`rootfsPropagation`选项是共享的）。
+- **`unbindable`**: rootfs 挂载是一个 private 挂载，不能被绑定挂载。
 
-The [Shared Subtrees][sharedsubtree] article in the kernel documentation has more information about mount propagation.
+内核文档中的 [Shared Subtrees][sharedsubtree] 文章有更多关于挂载传播的信息。
 
-### Example
+### 例子
 
 ```json
 "rootfsPropagation": "slave",
@@ -844,10 +828,10 @@ The [Shared Subtrees][sharedsubtree] article in the kernel documentation has mor
 
 ## <a name="configLinuxMaskedPaths" />Masked Paths
 
-**`maskedPaths`** (array of strings, OPTIONAL) will mask over the provided paths inside the container so that they cannot be read.
-The values MUST be absolute paths in the [container namespace](glossary.md#container_namespace).
+**`maskedPaths`** (字符串数组，OPTIONAL) 将掩盖容器内提供的路径，使其不能被读取。
+这些值必须是 [容器命名空间](glossary.md#container_namespace) 中的绝对路径。
 
-### Example
+### 例子
 
 ```json
 "maskedPaths": [
@@ -857,10 +841,10 @@ The values MUST be absolute paths in the [container namespace](glossary.md#conta
 
 ## <a name="configLinuxReadonlyPaths" />Readonly Paths
 
-**`readonlyPaths`** (array of strings, OPTIONAL) will set the provided paths as readonly inside the container.
-The values MUST be absolute paths in the [container namespace](glossary.md#container-namespace).
+**`readonlyPaths`** (字符串数组，OPTIONAL) 将把提供的路径设置为容器内的只读。
+这些值必须是 [容器命名空间](glossary.md#container-namespace)中的绝对路径。
 
-### Example
+### 例子
 
 ```json
 "readonlyPaths": [
@@ -870,9 +854,9 @@ The values MUST be absolute paths in the [container namespace](glossary.md#conta
 
 ## <a name="configLinuxMountLabel" />Mount Label
 
-**`mountLabel`** (string, OPTIONAL) will set the Selinux context for the mounts in the container.
+**`mountLabel`** (string, OPTIONAL) 将为容器中的挂载设置 Selinux 上下文。
 
-### Example
+### 例子
 
 ```json
 "mountLabel": "system_u:object_r:svirt_sandbox_file_t:s0:c715,c811"
@@ -880,21 +864,20 @@ The values MUST be absolute paths in the [container namespace](glossary.md#conta
 
 ## <a name="configLinuxPersonality" />Personality
 
-**`personality`** (object, OPTIONAL) sets the Linux execution personality. For more information
-see the [personality][personality.2] syscall documentation. As most of the options are
-obsolete and rarely used, and some reduce security, the currently supported set is a small
-subset of the available options.
+**`personality`** (object, OPTIONAL) 设置 Linux execution personality。关于更多信息
+参见 [personality][personality.2] 系统调用文档。由于大部分的选项都是
+由于大多数选项已经过时，很少使用，而且有些选项会降低安全性，目前支持的选项集只是一小部分
+的子集。
 
-* **`domain`** *(string, REQUIRED)* - the execution domain.
-    The valid list of constants is shown below. `LINUX32` will set the `uname` system call to show
-    a 32 bit CPU type, such as `i686`.
+**`domain`** *(string, REQUIRED)* - 执行域。
+    有效的常量列表如下所示。`LINUX32` 将设置 `uname` 系统调用以显示
+    一个 32 位的 CPU 类型，如 `i686`。
 
     * `LINUX`
     * `LINUX32`
 
-* **`flags`** *(array of strings, OPTIONAL)* - the additional flags to apply.
-    Currently no flag values are supported.
-
+**`flags`** *(字符串数组，可选)* - 要应用的额外标志。
+    目前不支持任何标志值。
 
 [cgroup-v1]: https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt
 [cgroup-v1-blkio]: https://www.kernel.org/doc/Documentation/cgroup-v1/blkio-controller.txt
