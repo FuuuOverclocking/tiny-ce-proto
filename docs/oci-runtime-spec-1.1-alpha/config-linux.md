@@ -81,9 +81,9 @@ Linux ABI 包括系统调用和一些特殊的文件路径。
 
 每个条目都有以下结构。
 
-**`containerID`** *(uint32, REQUIRED)* - 是容器中的起始uid/gid。
-**`hostID`** *(uint32, REQUIRED)* - 是要映射到*containerID*的主机上的起始uid/gid。
-**`size`** *(uint32, REQUIRED)* - 是要映射的ID的数量。
+- **`containerID`** *(uint32, REQUIRED)* - 是容器中的起始uid/gid。
+- **`hostID`** *(uint32, REQUIRED)* - 是要映射到*containerID*的主机上的起始uid/gid。
+- **`size`** *(uint32, REQUIRED)* - 是要映射的ID的数量。
 
 运行时不应该为了实现映射而修改引用的文件系统的所有权。
 请注意，映射项的数量可能会受到 [kernel][user-namespaces] 的限制。
@@ -198,7 +198,7 @@ cgroupsPath 的值必须是一个绝对路径或一个相对路径。
 
 本规范的实现可以选择以任何方式来命名cgroups。
 本规范不包括 cgroups 的命名模式。
-由于 [cgroupv2文档][cgroup-v2] 中讨论的原因，本规范不支持每个控制器的路径。
+由于 [cgroup v2文档][cgroup-v2] 中讨论的原因，本规范不支持每个控制器的路径。
 如果 cgroup 不存在，就会被创建。
 
 你可以通过 Linux 配置中的 `resources` 字段来配置容器的 cgroups。
@@ -214,7 +214,7 @@ cgroupsPath 的值必须是一个绝对路径或一个相对路径。
 当 cgroups v1 正在使用时，运行时不应该改变容器 cgroup 的所有权。在 cgroups v1 中，cgroup delegation 是不安全的。
 
 运行时不应该改变容器 cgroup 的所有权，除非它还将为该容器创建一个新的 cgroup 命名空间。
-通常情况下，当 `linux.namespaces` 数组中包含一个对象，其 `type` 等于 `cgroup`，`path` 未设置。
+一个典型的情况是，当 `linux.namespaces` 数组中包含一个对象，其 `type` 等于 `cgroup`，`path` 未设置。
 
 运行时应该改变cgroup的所有权，当且仅当 cgroup 文件系统将被挂载为 read/write；也就是说，当
 配置的 `mounts` 数组包含一个对象，其中：
@@ -248,8 +248,8 @@ cgroup.threads
 "cgroupsPath": "/myRuntime/myContainer",
 "resources": {
     "memory": {
-    "limit": 100000,
-    "reservation": 200000
+        "limit": 100000,
+        "reservation": 200000
     },
     "devices": [
         {
@@ -872,7 +872,6 @@ Seccomp 的配置允许人们配置对匹配的系统调用所采取的行动，
 **`domain`** *(string, REQUIRED)* - 执行域。
     有效的常量列表如下所示。`LINUX32` 将设置 `uname` 系统调用以显示
     一个 32 位的 CPU 类型，如 `i686`。
-
     * `LINUX`
     * `LINUX32`
 
