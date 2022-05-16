@@ -1,8 +1,6 @@
-use crate::types::{
-    Config, Namespace,
-    NamespaceType::{Cgroup, Ipc, Mount, Network, Pid, User, Uts},
-    Process, ProcessUser, Resources, ResourcesCPU, ResourcesMemory, Root,
-};
+use super::types::Container::Config;
+use super::types::Container::ConfigTypes::NamespaceType::*;
+use super::types::Container::ConfigTypes::*;
 
 impl Config {
     pub fn new_template() -> Box<Config> {
@@ -51,7 +49,7 @@ impl Config {
             ],
             uid_mappings: None,
             gid_mappings: None,
-            cgroups_path: Some("".to_string()),
+            cgroups_path: None,
             resources: Resources {
                 memory: ResourcesMemory {
                     limit: 512 * 1024 * 1024,
