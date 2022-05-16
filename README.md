@@ -1,5 +1,11 @@
 # Tiny CE (prototype)
 
+## 这是一个已归档的库
+
+该库是 Tiny CE 的原型, 已归档且只读.
+
+Tiny CE 参见 https://github.com/FuuuOverclocking/tiny-ce .
+
 ## 目的
 
 用 Linux 操作系统的 Namespace 和 Cgroup 机制, 实现一个简单的容器引擎.
